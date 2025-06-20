@@ -1,5 +1,4 @@
-﻿using _Project.Scripts.Enemies;
-using _Project.Scripts.Enemies.States;
+﻿using _Project.Scripts.Enemies.States;
 using _Project.Scripts.Utils.Classes;
 
 namespace _Project.Scripts.Character.States
@@ -33,10 +32,9 @@ namespace _Project.Scripts.Character.States
 
         private void HitTarget()
         {
-            _attackTimer.Reset();
-
             if (!_findTargetsInArea.ClosestTarget) return;
-            
+
+            _attackTimer.Reset();
             _findTargetsInArea.ClosestTarget.TakeDamage(_attackDamage);
         }
     }

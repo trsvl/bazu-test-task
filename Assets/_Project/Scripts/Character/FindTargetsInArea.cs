@@ -1,16 +1,20 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 
 namespace _Project.Scripts.Character
 {
-    public class FindTargetsInArea : MonoBehaviour
+    public class FindTargetsInArea : NetworkBehaviour
     {
         [SerializeField] private int _maxResults = 4;
         [SerializeField] private LayerMask TargetLayer;
-        public float AreaRadius = 5f;
-        public CharacterBase ClosestTarget { get; private set; }
-        public CharacterBase FirstClosestTarget { get; private set; }
-
+        [SerializeField] private bool _isDynamicTarget = true;
         private Collider[] _results;
+        public float AreaRadius = 5f;
+
+        private CharacterBase _firstClosestTarget;
+        private CharacterBase _cachedClosestTarget;
+
+        public CharacterBase ClosestTarget => _isDynamicTarget ? _firstClosestTarget : _cachedClosestTarget;
 
 
         private void Awake()
@@ -37,7 +41,7 @@ namespace _Project.Scripts.Character
         {
             if (GetDistanceToTarget() > AreaRadius)
             {
-                ClosestTarget = null;
+                _firstClosestTarget = null;
             }
         }
 
@@ -58,8 +62,8 @@ namespace _Project.Scripts.Character
             CharacterBase closestTypeTarget = closestTarget.GetComponent<CharacterBase>();
             if (!closestTypeTarget) return;
 
-            ClosestTarget = closestTypeTarget;
-            if (!FirstClosestTarget) FirstClosestTarget = ClosestTarget;
+            _cachedClosestTarget = closestTypeTarget;
+            if (!_firstClosestTarget) _firstClosestTarget = _cachedClosestTarget;
         }
 
         private void OnDrawGizmosSelected()

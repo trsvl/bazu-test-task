@@ -6,7 +6,6 @@ namespace _Project.Scripts.Enemies.Types
 {
     public class PatrolRangeEnemy : Enemy
     {
-        public Transform[] PatrolPoints { get; set; }
         [SerializeField] private int _attackDamage;
         [SerializeField] private float _attackCooldown;
         [SerializeField] private float _rotationSpeed;
@@ -15,9 +14,11 @@ namespace _Project.Scripts.Enemies.Types
         private StopWatchTimer _attackTimer;
 
 
-        protected override void Start()
+        public override void OnNetworkSpawn()
         {
-            base.Start();
+            if (!IsServer) return;
+
+            base.OnNetworkSpawn();
 
             _attackTimer = new StopWatchTimer(_attackCooldown);
 
@@ -37,7 +38,7 @@ namespace _Project.Scripts.Enemies.Types
 
         private StateNode RangeAttack()
         {
-            RangeAttack rangeAttack = new RangeAttack(_attackDamage, _attackTimer, transform, _projectile,
+            RangeAttack rangeAttack = new RangeAttack(this, _attackDamage, _attackTimer, transform, _projectile,
                 _findTargetsInArea, Team, true, _navMeshAgent);
 
             bool condition() => _findTargetsInArea.ClosestTarget;
@@ -49,6 +50,8 @@ namespace _Project.Scripts.Enemies.Types
 
         protected override void Update()
         {
+            if (!IsServer) return;
+
             _attackTimer.Update(Time.deltaTime);
             base.Update();
         }

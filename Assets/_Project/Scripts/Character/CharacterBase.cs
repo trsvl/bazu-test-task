@@ -1,11 +1,11 @@
-﻿using System;
-using _Project.Scripts.Utils.Enums;
+﻿using _Project.Scripts.Utils.Enums;
 using _Project.Scripts.Utils.Interfaces;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace _Project.Scripts.Character
 {
-    public abstract class CharacterBase : MonoBehaviour, IDamageable
+    public abstract class CharacterBase : NetworkBehaviour, IDamageable
     {
         public abstract Team Team { get; }
 
@@ -16,25 +16,32 @@ namespace _Project.Scripts.Character
         private Color _originalColor;
 
 
-        protected virtual void Start()
+        protected virtual void Awake()
         {
             _renderer = GetComponent<Renderer>();
             _originalColor = _renderer.material.color;
         }
 
-        public void TakeDamage(int damage)
+        public virtual void TakeDamage(int damage)
         {
             _health -= damage;
 
-            ChangeColor();
+            ChangeColorRpc();
 
             if (_health <= 0)
             {
-                Destroy(gameObject);
+                DestroyCharacter();
             }
         }
 
-        private void ChangeColor()
+        private void DestroyCharacter()
+        {
+            gameObject.GetComponent<NetworkObject>().Despawn();
+            Destroy(gameObject);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void ChangeColorRpc()
         {
             _renderer.material.color = Color.red;
             Invoke(nameof(ResetColor), _onHitColorDuration);

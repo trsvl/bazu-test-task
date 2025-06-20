@@ -1,5 +1,4 @@
-﻿using _Project.Scripts.Enemies;
-using _Project.Scripts.Enemies.States;
+﻿using _Project.Scripts.Enemies.States;
 using UnityEngine.AI;
 
 namespace _Project.Scripts.Character.States
@@ -7,15 +6,12 @@ namespace _Project.Scripts.Character.States
     public class Chase : RotateState, IState
     {
         private readonly FindTargetsInArea _findTargetsInArea;
-        private readonly bool _isDynamicTarget;
 
 
-        public Chase(NavMeshAgent navMeshAgent, float rotationSpeed, FindTargetsInArea findTargetsInArea,
-            bool isDynamicTarget) : base(
+        public Chase(NavMeshAgent navMeshAgent, float rotationSpeed, FindTargetsInArea findTargetsInArea) : base(
             navMeshAgent, rotationSpeed)
         {
             _findTargetsInArea = findTargetsInArea;
-            _isDynamicTarget = isDynamicTarget;
         }
 
         public void OnEnter()
@@ -33,12 +29,9 @@ namespace _Project.Scripts.Character.States
 
         private void OnChase()
         {
-            if (_isDynamicTarget ? !_findTargetsInArea.ClosestTarget : !_findTargetsInArea.FirstClosestTarget) return;
+            if (!_findTargetsInArea.ClosestTarget) return;
 
-            _navMeshAgent.SetDestination(_isDynamicTarget
-                ? _findTargetsInArea.ClosestTarget.transform.position
-                : _findTargetsInArea.FirstClosestTarget.transform.position);
-
+            _navMeshAgent.SetDestination(_findTargetsInArea.ClosestTarget.transform.position);
             Rotate();
         }
     }

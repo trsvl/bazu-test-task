@@ -15,20 +15,17 @@ namespace _Project.Scripts.Enemies.Types
         protected FindTargetsInArea _findTargetsInArea;
 
 
-        protected virtual void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             _navMeshAgent = GetComponent<NavMeshAgent>();
             _findTargetsInArea = GetComponent<FindTargetsInArea>();
-        }
-
-        protected override void Start()
-        {
-            base.Start();
             _stateMachine = new StateMachine();
         }
 
         protected virtual void Update()
         {
+            if (!IsServer) return;
             _stateMachine.Update();
         }
     }

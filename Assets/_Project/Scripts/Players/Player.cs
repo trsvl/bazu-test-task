@@ -1,12 +1,13 @@
-﻿using _Project.Scripts.Character;
+﻿using System;
+using _Project.Scripts.Character;
 using _Project.Scripts.Character.States;
-using _Project.Scripts.Enemies;
 using _Project.Scripts.Utils.Classes;
 using _Project.Scripts.Utils.Enums;
 using _Project.Scripts.Utils.Interfaces;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-namespace _Project.Scripts
+namespace _Project.Scripts.Players
 {
     public class Player : CharacterBase, IDamageable
     {
@@ -27,16 +28,16 @@ namespace _Project.Scripts
         private FindTargetsInArea _findTargetsInArea;
 
 
-        private void Awake()
+        public override void OnNetworkSpawn()
         {
+            if (!IsOwner) return;
+
+            Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-1f, 1f));
+            transform.position = randomDirection;
+
             _rigidbody = GetComponent<Rigidbody>();
             _camera = Camera.main;
             _findTargetsInArea = GetComponent<FindTargetsInArea>();
-        }
-
-        protected override void Start()
-        {
-            base.Start();
 
             _attackTimer = new StopWatchTimer(_attackCooldown);
             _stateMachine = new StateMachine();
@@ -46,6 +47,8 @@ namespace _Project.Scripts
 
         private void Update()
         {
+            if (!IsOwner) return;
+
             float horizontal = Input.GetAxisRaw("Horizontal");
             float vertical = Input.GetAxisRaw("Vertical");
             _movement = new Vector3(horizontal, 0, vertical).normalized * _moveSpeed;
@@ -53,12 +56,13 @@ namespace _Project.Scripts
             RotatePlayer();
 
             _attackTimer.Update(Time.deltaTime);
-
             _stateMachine.Update();
         }
 
         private void FixedUpdate()
         {
+            if (!IsOwner) return;
+
             _rigidbody.linearVelocity = new Vector3(_movement.x, _rigidbody.linearVelocity.y, _movement.z);
             _rigidbody.rotation = Quaternion.Euler(0f, _targetRotation.eulerAngles.y, 0f);
         }
@@ -86,7 +90,7 @@ namespace _Project.Scripts
 
         private StateNode RangeAttack()
         {
-            RangeAttack rangeAttack = new RangeAttack(_attackDamage, _attackTimer, transform, _projectile,
+            RangeAttack rangeAttack = new RangeAttack(this, _attackDamage, _attackTimer, transform, _projectile,
                 _findTargetsInArea, Team, false);
 
             bool condition() => _attackTimer.IsReady && _findTargetsInArea.ClosestTarget;

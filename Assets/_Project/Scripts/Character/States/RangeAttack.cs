@@ -1,6 +1,7 @@
 ﻿using _Project.Scripts.Enemies.States;
 using _Project.Scripts.Utils.Classes;
 using _Project.Scripts.Utils.Enums;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,6 +9,7 @@ namespace _Project.Scripts.Character.States
 {
     public class RangeAttack : IState
     {
+        private readonly NetworkBehaviour _networkBehaviour;
         private readonly int _attackDamage;
         private readonly StopWatchTimer _attackTimer;
         private readonly Transform _projectileSpawnPoint;
@@ -18,10 +20,12 @@ namespace _Project.Scripts.Character.States
         private readonly NavMeshAgent _navMeshAgent;
 
 
-        public RangeAttack(int attackDamage, StopWatchTimer attackTimer, Transform projectileSpawnPoint,
+        public RangeAttack(NetworkBehaviour networkBehaviour, int attackDamage, StopWatchTimer attackTimer,
+            Transform projectileSpawnPoint,
             Projectile projectilePrefab, FindTargetsInArea findTargetsInArea, Team team, bool isShootInUpdate,
             NavMeshAgent navMeshAgent = null)
         {
+            _networkBehaviour = networkBehaviour;
             _attackDamage = attackDamage;
             _attackTimer = attackTimer;
             _projectileSpawnPoint = projectileSpawnPoint;
@@ -49,11 +53,17 @@ namespace _Project.Scripts.Character.States
 
         private void SpawnProjectile()
         {
+            if (!_networkBehaviour.IsServer) return;
             if (!_attackTimer.IsReady) return;
             if (!_findTargetsInArea.ClosestTarget) return;
 
             _attackTimer.Reset();
+            SpawnRpc();
+        }
 
+        [Rpc(SendTo.Server)] //???
+        private void SpawnRpc()
+        {
             Projectile projectile =
                 Object.Instantiate(_projectilePrefab, _projectileSpawnPoint.position, Quaternion.identity);
             projectile?.AssignData(_findTargetsInArea.ClosestTarget.transform.position, _attackDamage, _team);
@@ -65,6 +75,8 @@ namespace _Project.Scripts.Character.States
             {
                 Physics.IgnoreCollision(shooterCollider, bulletCollider);
             }
+
+            projectile?.GetComponent<NetworkObject>().Spawn();
         }
 
         private void Rotate()

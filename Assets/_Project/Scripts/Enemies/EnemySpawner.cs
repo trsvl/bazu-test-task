@@ -1,12 +1,11 @@
-﻿using System;
-using _Project.Scripts.Enemies.Types;
-using _Project.Scripts.Utils.Interfaces;
+﻿using _Project.Scripts.Enemies.Types;
+using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace _Project.Scripts.Enemies
 {
-    public class EnemySpawner : MonoBehaviour
+    public class EnemySpawner : NetworkBehaviour
     {
         [SerializeField] private float _timeBetweenSpawns;
         [SerializeField] private Transform[] _spawnPoints;
@@ -15,21 +14,26 @@ namespace _Project.Scripts.Enemies
 
         public static EnemySpawner Instance;
 
+
         public void Awake()
         {
             if (Instance == null) Instance = this;
             else Destroy(Instance);
         }
 
-        private void Start()
+        public void StartSpawn()
         {
-            InvokeRepeating(nameof(Spawn), 0f, _timeBetweenSpawns);
+            if (!IsServer) return;
+
+            InvokeRepeating(nameof(SpawnRpc), _timeBetweenSpawns, _timeBetweenSpawns);
         }
 
-        public void Spawn()
+        [Rpc(SendTo.Server)]
+        private void SpawnRpc()
         {
             var spawnPoint = GetRandomSpawnPoint();
-            Instantiate(GetRandomEnemyPrefab(), spawnPoint.position, spawnPoint.rotation);
+            var enemy = Instantiate(GetRandomEnemyPrefab(), spawnPoint.position, spawnPoint.rotation);
+            enemy.GetComponent<NetworkObject>().Spawn();
         }
 
         private Enemy GetRandomEnemyPrefab()

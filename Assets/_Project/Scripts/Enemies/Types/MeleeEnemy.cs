@@ -1,5 +1,4 @@
 ﻿using _Project.Scripts.Character.States;
-using _Project.Scripts.Enemies.States;
 using _Project.Scripts.Utils.Classes;
 using UnityEngine;
 
@@ -15,9 +14,11 @@ namespace _Project.Scripts.Enemies.Types
         private StopWatchTimer _attackTimer;
 
 
-        protected override void Start()
+        public override void OnNetworkSpawn()
         {
-            base.Start();
+            if (!IsServer) return;
+
+            base.OnNetworkSpawn();
 
             _attackTimer = new StopWatchTimer(_attackCooldown);
 
@@ -29,8 +30,7 @@ namespace _Project.Scripts.Enemies.Types
         {
             MeleeAttack meleeAttackState = new MeleeAttack(_attackDamage, _attackTimer, _findTargetsInArea);
 
-            bool condition() => _attackTimer.IsReady && _findTargetsInArea.ClosestTarget &&
-                                _findTargetsInArea.GetDistanceToTarget() <= _attackRadius;
+            bool condition() => _attackTimer.IsReady && _findTargetsInArea.GetDistanceToTarget() <= _attackRadius;
 
             StateNode node = new StateNode(meleeAttackState, condition);
             return node;
@@ -38,9 +38,9 @@ namespace _Project.Scripts.Enemies.Types
 
         private StateNode Chase()
         {
-            Chase chaseState = new Chase(_navMeshAgent, _rotationSpeed, _findTargetsInArea, false);
+            Chase chaseState = new Chase(_navMeshAgent, _rotationSpeed, _findTargetsInArea);
 
-            bool condition() => _findTargetsInArea.ClosestTarget;
+            bool condition() => true;
 
             StateNode node = new StateNode(chaseState, condition);
             return node;
@@ -48,6 +48,8 @@ namespace _Project.Scripts.Enemies.Types
 
         protected override void Update()
         {
+            if (!IsServer) return;
+
             _attackTimer.Update(Time.deltaTime);
             base.Update();
         }
