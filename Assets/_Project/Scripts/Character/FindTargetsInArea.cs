@@ -1,0 +1,79 @@
+﻿using UnityEngine;
+
+namespace _Project.Scripts.Character
+{
+    public class FindTargetsInArea : MonoBehaviour
+    {
+        [SerializeField] private int _maxResults = 4;
+        [SerializeField] private LayerMask TargetLayer;
+        public float AreaRadius = 5f;
+        public CharacterBase ClosestTarget { get; private set; }
+        public CharacterBase FirstClosestTarget { get; private set; }
+
+        private Collider[] _results;
+
+
+        private void Awake()
+        {
+            _results = new Collider[_maxResults];
+        }
+
+        private void Update()
+        {
+            int hits = Physics.OverlapSphereNonAlloc(transform.position, AreaRadius, _results, TargetLayer);
+
+            CheckRange();
+
+            if (hits <= 0) return;
+
+            for (int i = 0; i < hits; i++)
+            {
+                Collider col = _results[i];
+                FindClosestTarget(col);
+            }
+        }
+
+        private void CheckRange()
+        {
+            if (GetDistanceToTarget() > AreaRadius)
+            {
+                ClosestTarget = null;
+            }
+        }
+
+        private void FindClosestTarget(Collider potentialTarget)
+        {
+            const float closestDistance = Mathf.Infinity;
+            Transform closestTarget = null;
+
+            Vector2 directionToTarget = potentialTarget.transform.localPosition - transform.localPosition;
+            float directionSqr = directionToTarget.sqrMagnitude;
+
+            if (directionSqr < closestDistance)
+            {
+                closestTarget = potentialTarget.transform;
+            }
+
+            if (!closestTarget) return;
+            CharacterBase closestTypeTarget = closestTarget.GetComponent<CharacterBase>();
+            if (!closestTypeTarget) return;
+
+            ClosestTarget = closestTypeTarget;
+            if (!FirstClosestTarget) FirstClosestTarget = ClosestTarget;
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, AreaRadius);
+        }
+
+        public float GetDistanceToTarget()
+        {
+            if (!ClosestTarget) return 0;
+
+            float distance = Vector3.Distance(transform.position, ClosestTarget.transform.position);
+            return distance;
+        }
+    }
+}

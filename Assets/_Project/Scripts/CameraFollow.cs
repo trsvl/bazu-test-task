@@ -21,7 +21,8 @@ namespace _Project.Scripts
 
         private void LateUpdate()
         {
-            _camera.transform.position = _player.transform.position - _offset;
+            Vector3 targetPosition = _player.transform.position - _offset;
+            _camera.transform.position = Vector3.Lerp(_camera.transform.position, targetPosition, 5f * Time.deltaTime);
         }
     }
 }
