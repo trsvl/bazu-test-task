@@ -184,7 +184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _health: 999999
+  _health: 20
   _attackDamage: 2
   _attackCooldown: 2
   _projectile: {fileID: 3869127328571592018, guid: a5628c1cd8409844f9f60f3044174b9d, type: 3}
@@ -222,6 +222,7 @@ MonoBehaviour:
   TargetLayer:
     serializedVersion: 2
     m_Bits: 256
+  _isDynamicTarget: 1
   AreaRadius: 6
 --- !u!114 &5799844427060804836
 MonoBehaviour:

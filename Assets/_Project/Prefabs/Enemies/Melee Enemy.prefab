@@ -261,7 +261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _health: 6666
+  _health: 6
   _attackDamage: 1
   _attackCooldown: 1
   _attackRadius: 2
