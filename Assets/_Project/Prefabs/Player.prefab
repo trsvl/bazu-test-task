@@ -184,10 +184,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _health: 20
+  _health: 10
   _attackDamage: 2
   _attackCooldown: 2
-  _projectile: {fileID: 3869127328571592018, guid: a5628c1cd8409844f9f60f3044174b9d, type: 3}
   _moveSpeed: 5
   _groundLayer:
     serializedVersion: 2

@@ -25,7 +25,7 @@ namespace _Project.Scripts.Enemies
         {
             if (!IsServer) return;
 
-            InvokeRepeating(nameof(SpawnRpc), _timeBetweenSpawns, _timeBetweenSpawns);
+            InvokeRepeating(nameof(SpawnRpc), 0f, _timeBetweenSpawns);
         }
 
         [Rpc(SendTo.Server)]

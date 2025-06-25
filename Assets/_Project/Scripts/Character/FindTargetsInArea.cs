@@ -14,7 +14,7 @@ namespace _Project.Scripts.Character
         private CharacterBase _firstClosestTarget;
         private CharacterBase _cachedClosestTarget;
 
-        public CharacterBase ClosestTarget => _isDynamicTarget ? _firstClosestTarget : _cachedClosestTarget;
+        public CharacterBase ClosestTarget => _isDynamicTarget ? _cachedClosestTarget : _firstClosestTarget;
 
 
         private void Awake()
@@ -22,32 +22,42 @@ namespace _Project.Scripts.Character
             _results = new Collider[_maxResults];
         }
 
-        private void Update()
+        public void OnUpdate()
         {
             int hits = Physics.OverlapSphereNonAlloc(transform.position, AreaRadius, _results, TargetLayer);
+            if (hits <= 0)
+            {
+                _cachedClosestTarget = null;
+                return;
+            }
 
-            CheckRange();
-
-            if (hits <= 0) return;
+            CharacterBase closestTarget = null;
+            float closestDistanceSqr = Mathf.Infinity;
 
             for (int i = 0; i < hits; i++)
             {
-                Collider col = _results[i];
-                FindClosestTarget(col);
-            }
-        }
+                var col = _results[i];
+                var target = col.GetComponent<CharacterBase>();
+                if (!target) continue;
 
-        private void CheckRange()
-        {
-            if (GetDistanceToTarget() > AreaRadius)
-            {
-                _firstClosestTarget = null;
+                float distSqr = (target.transform.position - transform.position).sqrMagnitude;
+
+                if (distSqr < closestDistanceSqr)
+                {
+                    closestDistanceSqr = distSqr;
+                    closestTarget = target;
+                }
             }
+
+            _cachedClosestTarget = closestTarget;
+
+            if (!_firstClosestTarget && closestTarget) _firstClosestTarget = closestTarget;
         }
 
         private void FindClosestTarget(Collider potentialTarget)
         {
             const float closestDistance = Mathf.Infinity;
+
             Transform closestTarget = null;
 
             Vector2 directionToTarget = potentialTarget.transform.localPosition - transform.localPosition;
@@ -63,7 +73,6 @@ namespace _Project.Scripts.Character
             if (!closestTypeTarget) return;
 
             _cachedClosestTarget = closestTypeTarget;
-            if (!_firstClosestTarget) _firstClosestTarget = _cachedClosestTarget;
         }
 
         private void OnDrawGizmosSelected()

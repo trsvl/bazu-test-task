@@ -1,9 +1,9 @@
-﻿using System;
-using _Project.Scripts.Character;
+﻿using _Project.Scripts.Character;
 using _Project.Scripts.Character.States;
 using _Project.Scripts.Utils.Classes;
 using _Project.Scripts.Utils.Enums;
 using _Project.Scripts.Utils.Interfaces;
+using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -15,7 +15,6 @@ namespace _Project.Scripts.Players
 
         [SerializeField] private int _attackDamage;
         [SerializeField] private float _attackCooldown;
-        [SerializeField] private Projectile _projectile;
         [SerializeField] private float _moveSpeed;
         [SerializeField] private LayerMask _groundLayer;
 
@@ -25,7 +24,6 @@ namespace _Project.Scripts.Players
         private Quaternion _targetRotation;
         private StateMachine _stateMachine;
         private StopWatchTimer _attackTimer;
-        private FindTargetsInArea _findTargetsInArea;
 
 
         public override void OnNetworkSpawn()
@@ -45,7 +43,7 @@ namespace _Project.Scripts.Players
             _stateMachine.AddState(RangeAttack());
         }
 
-        private void Update()
+        protected override void Update()
         {
             if (!IsOwner) return;
 
@@ -54,7 +52,7 @@ namespace _Project.Scripts.Players
             _movement = new Vector3(horizontal, 0, vertical).normalized * _moveSpeed;
 
             RotatePlayer();
-
+            base.Update();
             _attackTimer.Update(Time.deltaTime);
             _stateMachine.Update();
         }
@@ -90,8 +88,10 @@ namespace _Project.Scripts.Players
 
         private StateNode RangeAttack()
         {
-            RangeAttack rangeAttack = new RangeAttack(this, _attackDamage, _attackTimer, transform, _projectile,
-                _findTargetsInArea, Team, false);
+            ShootManager shootManager = FindAnyObjectByType<ShootManager>();
+
+            RangeAttack rangeAttack = new RangeAttack(shootManager, _attackDamage, _attackTimer,
+                GetComponent<NetworkObject>(), _findTargetsInArea, Team, false);
 
             bool condition() => _attackTimer.IsReady && _findTargetsInArea.ClosestTarget;
 

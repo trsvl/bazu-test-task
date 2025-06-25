@@ -261,11 +261,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _health: 8
+  _health: 6
   _attackDamage: 2
   _attackCooldown: 2
   _rotationSpeed: 5
-  _projectile: {fileID: 3869127328571592018, guid: a5628c1cd8409844f9f60f3044174b9d, type: 3}
 --- !u!114 &1273995552668896888
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -283,6 +282,7 @@ MonoBehaviour:
   TargetLayer:
     serializedVersion: 2
     m_Bits: 128
+  _isDynamicTarget: 1
   AreaRadius: 5
 --- !u!114 &-9168587688625707744
 MonoBehaviour:

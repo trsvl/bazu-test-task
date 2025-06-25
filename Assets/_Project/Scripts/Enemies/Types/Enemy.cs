@@ -12,21 +12,20 @@ namespace _Project.Scripts.Enemies.Types
 
         protected NavMeshAgent _navMeshAgent;
         protected StateMachine _stateMachine;
-        protected FindTargetsInArea _findTargetsInArea;
 
 
         protected override void Awake()
         {
             base.Awake();
             _navMeshAgent = GetComponent<NavMeshAgent>();
-            _findTargetsInArea = GetComponent<FindTargetsInArea>();
             _stateMachine = new StateMachine();
         }
 
-        protected virtual void Update()
+        protected override void Update()
         {
             if (!IsServer) return;
             _stateMachine.Update();
+            base.Update();
         }
     }
 }

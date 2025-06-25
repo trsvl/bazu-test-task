@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 803325184850474416}
   - component: {fileID: -382678151688467550}
   - component: {fileID: -1334907718445110394}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -79,6 +79,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _speed: 15
   _lifetime: 5
+  _collider: {fileID: 6168014222894249315}
 --- !u!65 &6168014222894249315
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -94,7 +95,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3

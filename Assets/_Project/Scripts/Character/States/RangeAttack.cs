@@ -9,27 +9,24 @@ namespace _Project.Scripts.Character.States
 {
     public class RangeAttack : IState
     {
-        private readonly NetworkBehaviour _networkBehaviour;
+        private readonly ShootManager _shootManager;
         private readonly int _attackDamage;
         private readonly StopWatchTimer _attackTimer;
-        private readonly Transform _projectileSpawnPoint;
-        private readonly Projectile _projectilePrefab;
+        private readonly NetworkObjectReference _projectileSpawnPointRef;
         private readonly FindTargetsInArea _findTargetsInArea;
         private readonly Team _team;
         private readonly bool _isShootInUpdate;
         private readonly NavMeshAgent _navMeshAgent;
 
 
-        public RangeAttack(NetworkBehaviour networkBehaviour, int attackDamage, StopWatchTimer attackTimer,
-            Transform projectileSpawnPoint,
-            Projectile projectilePrefab, FindTargetsInArea findTargetsInArea, Team team, bool isShootInUpdate,
-            NavMeshAgent navMeshAgent = null)
+        public RangeAttack(ShootManager shootManager, int attackDamage, StopWatchTimer attackTimer,
+            NetworkObjectReference projectileSpawnPointRef, FindTargetsInArea findTargetsInArea, Team team,
+            bool isShootInUpdate, NavMeshAgent navMeshAgent = null)
         {
-            _networkBehaviour = networkBehaviour;
+            _shootManager = shootManager;
             _attackDamage = attackDamage;
             _attackTimer = attackTimer;
-            _projectileSpawnPoint = projectileSpawnPoint;
-            _projectilePrefab = projectilePrefab;
+            _projectileSpawnPointRef = projectileSpawnPointRef;
             _findTargetsInArea = findTargetsInArea;
             _team = team;
             _isShootInUpdate = isShootInUpdate;
@@ -53,30 +50,17 @@ namespace _Project.Scripts.Character.States
 
         private void SpawnProjectile()
         {
-            if (!_networkBehaviour.IsServer) return;
             if (!_attackTimer.IsReady) return;
             if (!_findTargetsInArea.ClosestTarget) return;
 
             _attackTimer.Reset();
-            SpawnRpc();
-        }
 
-        [Rpc(SendTo.Server)] //???
-        private void SpawnRpc()
-        {
-            Projectile projectile =
-                Object.Instantiate(_projectilePrefab, _projectileSpawnPoint.position, Quaternion.identity);
-            projectile?.AssignData(_findTargetsInArea.ClosestTarget.transform.position, _attackDamage, _team);
-
-            Collider shooterCollider = _projectileSpawnPoint.GetComponent<Collider>();
-            Collider bulletCollider = projectile?.GetComponent<Collider>();
-
-            if (shooterCollider && bulletCollider)
-            {
-                Physics.IgnoreCollision(shooterCollider, bulletCollider);
-            }
-
-            projectile?.GetComponent<NetworkObject>().Spawn();
+            _shootManager.SpawnRpc(
+                _projectileSpawnPointRef,
+                _findTargetsInArea.ClosestTarget.transform.position,
+                _attackDamage,
+                _team
+            );
         }
 
         private void Rotate()

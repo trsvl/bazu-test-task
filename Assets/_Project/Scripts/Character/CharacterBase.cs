@@ -11,6 +11,7 @@ namespace _Project.Scripts.Character
 
         [SerializeField] protected int _health;
 
+        protected FindTargetsInArea _findTargetsInArea;
         private const float _onHitColorDuration = 0.1f;
         private Renderer _renderer;
         private Color _originalColor;
@@ -20,6 +21,12 @@ namespace _Project.Scripts.Character
         {
             _renderer = GetComponent<Renderer>();
             _originalColor = _renderer.material.color;
+            _findTargetsInArea = GetComponent<FindTargetsInArea>();
+        }
+
+        protected virtual void Update()
+        {
+            _findTargetsInArea.OnUpdate();
         }
 
         public virtual void TakeDamage(int damage)

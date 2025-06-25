@@ -1,5 +1,6 @@
 ﻿using _Project.Scripts.Character.States;
 using _Project.Scripts.Utils.Classes;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace _Project.Scripts.Enemies.Types
@@ -9,7 +10,6 @@ namespace _Project.Scripts.Enemies.Types
         [SerializeField] private int _attackDamage;
         [SerializeField] private float _attackCooldown;
         [SerializeField] private float _rotationSpeed;
-        [SerializeField] private Projectile _projectile;
 
         private StopWatchTimer _attackTimer;
 
@@ -38,7 +38,8 @@ namespace _Project.Scripts.Enemies.Types
 
         private StateNode RangeAttack()
         {
-            RangeAttack rangeAttack = new RangeAttack(this, _attackDamage, _attackTimer, transform, _projectile,
+            ShootManager shootManager = FindAnyObjectByType<ShootManager>();
+            RangeAttack rangeAttack = new RangeAttack(shootManager, _attackDamage, _attackTimer, GetComponent<NetworkObject>(),
                 _findTargetsInArea, Team, true, _navMeshAgent);
 
             bool condition() => _findTargetsInArea.ClosestTarget;
