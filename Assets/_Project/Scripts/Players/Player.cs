@@ -1,4 +1,5 @@
-﻿using _Project.Scripts.Character;
+﻿using System;
+using _Project.Scripts.Character;
 using _Project.Scripts.Character.States;
 using _Project.Scripts.Utils.Classes;
 using _Project.Scripts.Utils.Enums;
@@ -18,6 +19,8 @@ namespace _Project.Scripts.Players
         [SerializeField] private float _moveSpeed;
         [SerializeField] private LayerMask _groundLayer;
 
+        private HealthBar _healthBar;
+        private int _maxHealth;
         private Camera _camera;
         private Rigidbody _rigidbody;
         private Vector3 _movement;
@@ -26,21 +29,34 @@ namespace _Project.Scripts.Players
         private StopWatchTimer _attackTimer;
 
 
+        protected override void Awake()
+        {
+            base.Awake();
+            _healthBar = GetComponent<HealthBar>();
+            _maxHealth = _health;
+        }
+
         public override void OnNetworkSpawn()
         {
-            if (!IsOwner) return;
+            if (IsOwner)
+            {
+                Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-1f, 1f));
+                transform.position = randomDirection;
+                _rigidbody = GetComponent<Rigidbody>();
+                _camera = Camera.main;
+                _findTargetsInArea = GetComponent<FindTargetsInArea>();
 
-            Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-1f, 1f));
-            transform.position = randomDirection;
+                _attackTimer = new StopWatchTimer(_attackCooldown);
+                _stateMachine = new StateMachine();
+                _stateMachine.AddState(Idle(), true);
+                _stateMachine.AddState(RangeAttack());
+            }
 
-            _rigidbody = GetComponent<Rigidbody>();
-            _camera = Camera.main;
-            _findTargetsInArea = GetComponent<FindTargetsInArea>();
+            _healthBar.OnSpawn(_maxHealth);
 
-            _attackTimer = new StopWatchTimer(_attackCooldown);
-            _stateMachine = new StateMachine();
-            _stateMachine.AddState(Idle(), true);
-            _stateMachine.AddState(RangeAttack());
+            if (IsServer)
+            {
+            }
         }
 
         protected override void Update()
@@ -63,6 +79,19 @@ namespace _Project.Scripts.Players
 
             _rigidbody.linearVelocity = new Vector3(_movement.x, _rigidbody.linearVelocity.y, _movement.z);
             _rigidbody.rotation = Quaternion.Euler(0f, _targetRotation.eulerAngles.y, 0f);
+        }
+
+        public override void TakeDamage(int damage)
+        {
+            _health -= damage;
+
+            ChangeColorRpc();
+            _healthBar.UpdateHealthRpc(_health);
+
+            if (_health <= 0)
+            {
+                DestroyCharacter();
+            }
         }
 
         /// <summary>

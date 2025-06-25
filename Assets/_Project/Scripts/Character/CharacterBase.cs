@@ -41,14 +41,14 @@ namespace _Project.Scripts.Character
             }
         }
 
-        private void DestroyCharacter()
+        protected void DestroyCharacter()
         {
             gameObject.GetComponent<NetworkObject>().Despawn();
             Destroy(gameObject);
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        private void ChangeColorRpc()
+        protected void ChangeColorRpc()
         {
             _renderer.material.color = Color.red;
             Invoke(nameof(ResetColor), _onHitColorDuration);
